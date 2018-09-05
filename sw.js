@@ -1,4 +1,4 @@
-let staticCacheName = "v7";
+let staticCacheName = "v1";
 let allCaches = [
   "./index.html",
   "./restaurant.html",
@@ -42,7 +42,7 @@ self.addEventListener("activate", e => {
 });
 self.addEventListener("fetch", e => {
   e.respondWith(
-    caches.match(e.request).then(response => {
+    caches.match(e.request, { ignoreSearch: true }).then(response => {
       if (response) return response;
       return fetch(e.request);
     })
