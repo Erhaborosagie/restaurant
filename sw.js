@@ -1,5 +1,6 @@
 let staticCacheName = "v1";
 let allCaches = [
+  "/",
   "./index.html",
   "./restaurant.html",
   "./css/styles.css",
