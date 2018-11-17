@@ -22,12 +22,29 @@ class DBHelper {
       })
       .then(myJson => {
         const restaurants = myJson;
-
+        console.log(restaurants);
+        DBHelper.restaurantToDb(restaurants);
         callback(null, restaurants);
       })
-      .catch(e => {
-        callback(null, restaurants);
+      .catch(error => {
+        callback(error, null);
       });
+  }
+
+  static restaurantToDb(restaurants) {
+    let request = window.indexedDB.open("resDB", 1);
+    request.onupgradeneeded = e => {
+      let db = request.result;
+      let store = db.createObjectStore("resStore", { keyPath: "id" });
+    };
+    request.onsuccess = e => {
+      let db = request.result;
+      let tx = db.transaction("resStore", "readwrite");
+      let store = tx.objectStore("resStore");
+      restaurants.forEach(restaurant => {
+        store.put(restaurant);
+      });
+    };
   }
 
   /**
