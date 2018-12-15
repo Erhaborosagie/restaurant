@@ -5,6 +5,8 @@ let allCaches = [
   "./restaurant.html",
   "./css/styles.css",
   "./js/main.js",
+  "./js/app.js",
+  "./js/idb.js",
   "./js/dbhelper.js",
   "./js/restaurant_info.js",
   "./img/1.jpg",

@@ -16,18 +16,51 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    fetch(DBHelper.DATABASE_URL)
-      .then(response => {
-        return response.json();
+    let dbPromise = idb.open("restaurantDb", 1, function(upgradeDb) {
+      console.log("making a new object store");
+      if (!upgradeDb.objectStoreNames.contains("restaurant")) {
+        upgradeDb.createObjectStore("restaurant", { keyPath: "id" });
+      }
+    });
+    dbPromise
+      .then(function(db) {
+        let tx = db.transaction("restaurant", "readonly");
+        let store = tx.objectStore("restaurant");
+        return store.getAll();
       })
-      .then(myJson => {
-        const restaurants = myJson;
-        console.log(restaurants);
-        DBHelper.restaurantToDb(restaurants);
-        callback(null, restaurants);
-      })
-      .catch(error => {
-        callback(error, null);
+      .then(function(restaurants) {
+        //check for availability of data in indexeddb and return it
+        if (restaurants.length !== 0) {
+          callback(null, restaurants);
+        } else {
+          // No data, attempt a fetch
+          fetch(DBHelper.DATABASE_URL)
+            .then(response => {
+              return response.json();
+            })
+            .then(restaurants => {
+              dbPromise
+                .then(function(db) {
+                  let tx = db.transaction("restaurant", "readwrite");
+                  let restaurantStore = tx.objectStore("restaurant");
+
+                  for (let restaurant of restaurants) {
+                    restaurantStore.put(restaurant);
+                  }
+
+                  return tx.complete;
+                })
+                .then(function() {
+                  console.log("added item to restaurant!");
+                })
+                .catch(function(error) {
+                  console.log(error);
+                })
+                .finally(function(error) {
+                  callback(null, restaurants);
+                });
+            });
+        }
       });
   }
 
