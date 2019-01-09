@@ -13,8 +13,19 @@
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css" integrity="sha512-Rksm5RenBEKSKFjgI3a41vrjkw4EVPlJ3+OiI65vTjIdo9brlAacEuKOiQ5OFh7cOI1bkDwLqdLw3Zg0cRJAAQ=="
       crossorigin="" />
     -->
+    <meta name="theme-color" content="#fef" />
+    <link rel="manifest" href="/manifest.json" />
     <title>Restaurant Info</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      form {
+        width: 100%;
+        padding: 1em;
+        margin-left: 0;
+        margin-right: 0;
+        height: auto;
+      }
+    </style>
   </head>
 
   <body class="inside">
@@ -50,6 +61,53 @@
       <!-- Beginning reviews -->
       <section id="reviews-container"><ul id="reviews-list"></ul></section>
       <!-- End reviews -->
+
+      <section id="comment-container">
+        <h2>Post a comment</h2>
+        <form id="postReviews" role="form" style="">
+          <div>
+            <input
+              type="text"
+              placeholder="Your Name"
+              name="reviewer"
+              id="reviewer"
+              required
+            />
+          </div>
+          <br />
+          <div>
+            <label for="rate">Rate: </label>
+            <label for="rate5" title="5 Star"></label>
+            <input type="radio" name="rate" id="rate5" value="5" required />
+
+            <label for="rate4" title="4 Star"></label>
+            <input type="radio" name="rate" id="rate4" value="4" />
+
+            <label for="rate3" title="3 Star"></label>
+            <input type="radio" name="rate" id="rate3" value="3" />
+
+            <label for="rate2" title="2 Star"></label>
+            <input type="radio" name="rate" id="rate2" value="2" />
+
+            <label for="rate1" title="1 Star"></label>
+            <input type="radio" name="rate" id="rate1" value="1" />
+          </div>
+          <br />
+          <div>
+            <textarea
+              placeholder="Your Comment"
+              name="reviewMessage"
+              id="reviewMessage"
+              id="body"
+              cols="20"
+              rows="5"
+              required
+            ></textarea>
+          </div>
+          <br />
+          <input type="submit" value="SEND POST" />
+        </form>
+      </section>
     </main>
     <!-- End main -->
 

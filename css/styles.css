@@ -265,7 +265,8 @@ h1 {
   width: 90%;
 }
 #restaurant-container,
-#reviews-container {
+#reviews-container,
+#comment-container {
   border-bottom: 1px solid #d9d9d9;
   border-top: 1px solid #fff;
   padding: 10px 30px 30px;
@@ -291,7 +292,8 @@ h1 {
     height: 100%;
   }
   #restaurant-container,
-  #reviews-container {
+  #reviews-container,
+  #comment-container {
     width: 50%;
   }
 }
@@ -300,10 +302,12 @@ h1 {
     width: calc((100% - 120px) / 4);
   }
 }
-#reviews-container {
+#reviews-container,
+#comment-container {
   padding: 30px 40px 80px;
 }
-#reviews-container h2 {
+#reviews-container h2,
+#comment-container h2 {
   color: #f58500;
   font-size: 24pt;
   font-weight: 300;

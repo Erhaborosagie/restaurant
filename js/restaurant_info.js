@@ -8,8 +8,31 @@ document.addEventListener("DOMContentLoaded", event => {
   //initMap();
 });
 
-/**
- * */
+document.getElementById("postReviews").addEventListener("submit", postReviews);
+
+function postReviews(e) {
+  e.preventDefault();
+  let rate = document.querySelector('input[name="rate"]:checked').value;
+  let name = document.getElementById("reviewer").value;
+  let comments = document.getElementById("reviewMessage").value;
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlId = urlParams.get("id");
+
+  const params = {
+    restaurant_id: urlId,
+    name: name,
+    rating: rate,
+    comments: comments
+  };
+  fetch("http://localhost:1337/reviews/", {
+    method: "POST",
+    headers: new Headers(),
+    body: JSON.stringify(params)
+  })
+    .then(res => res.json())
+    .then(data => console.log(data))
+    .catch(err => console.log(err));
+}
 
 window.initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
