@@ -8,26 +8,24 @@ class DBHelper {
    */
   static get DATABASE_URL() {
     const port = 1337; // Change this to your server port
-    return `http://localhost:${port}/restaurants`;
-    //return `./data/restaurants.json`;
-  }
-  static get REVIEW_URL() {
-    const port = 1337; // Change this to your server port
     return `http://localhost:${port}`;
     //return `./data/restaurants.json`;
+  }
+
+  static get dbPromise() {
+    return idb.open("restaurantDb", 1, function(upgradeDb) {
+      console.log("making new object stores");
+      upgradeDb.createObjectStore("restaurant", { keyPath: "id" });
+      upgradeDb.createObjectStore("reviewStore", { keyPath: "id" });
+      upgradeDb.createObjectStore("offlineReviews", { keyPath: "id" });
+    });
   }
 
   /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    let dbPromise = idb.open("restaurantDb", 1, function(upgradeDb) {
-      console.log("making a new object store");
-      if (!upgradeDb.objectStoreNames.contains("restaurant")) {
-        upgradeDb.createObjectStore("restaurant", { keyPath: "id" });
-      }
-    });
-    dbPromise
+    DBHelper.dbPromise
       .then(function(db) {
         let tx = db.transaction("restaurant", "readonly");
         let store = tx.objectStore("restaurant");
@@ -39,12 +37,12 @@ class DBHelper {
           callback(null, restaurants);
         } else {
           // No data, attempt a fetch
-          fetch(DBHelper.DATABASE_URL)
+          fetch(`${DBHelper.DATABASE_URL}/restaurants`)
             .then(response => {
               return response.json();
             })
             .then(restaurants => {
-              dbPromise
+              DBHelper.dbPromise
                 .then(function(db) {
                   let tx = db.transaction("restaurant", "readwrite");
                   let restaurantStore = tx.objectStore("restaurant");
@@ -232,13 +230,7 @@ class DBHelper {
   }
 
   static fetchReviews(restaurant, callback) {
-    let dbPromise = idb.open("restaurantDb", 2, function(upgradeDb) {
-      console.log("making a new object store");
-      if (!upgradeDb.objectStoreNames.contains("reviewStore")) {
-        upgradeDb.createObjectStore("reviewStore", { keyPath: "id" });
-      }
-    });
-    dbPromise
+    DBHelper.dbPromise
       .then(function(db) {
         let tx = db.transaction("reviewStore");
         let store = tx.objectStore("reviewStore");
@@ -250,13 +242,12 @@ class DBHelper {
         } else {
           const urlParams = new URLSearchParams(window.location.search);
           const urlId = urlParams.get("id");
-          fetch(`${DBHelper.REVIEW_URL}/reviews?restaurant_id=${urlId}`)
+          fetch(`${DBHelper.DATABASE_URL}/reviews?restaurant_id=${urlId}`)
             .then(response => {
               return response.json();
             })
             .then(reviews => {
-              console.log(reviews);
-              dbPromise.then(function(db) {
+              DBHelper.dbPromise.then(function(db) {
                 if (!db) return;
                 let tx = db.transaction("reviewStore", "readwrite");
                 let store = tx.objectStore("reviewStore");
