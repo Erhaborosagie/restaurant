@@ -72,8 +72,14 @@ fetchRestaurantFromURL = callback => {
         console.error(error);
         return;
       }
-      fillRestaurantHTML();
-      callback(null, restaurant);
+      DBHelper.fetchReviews(self.restaurant, (error, reviews) => {
+        self.restaurant.reviews = reviews;
+        if (!reviews) {
+          console.error(error);
+        }
+        fillRestaurantHTML();
+        callback(null, restaurant);
+      });
     });
   }
 };

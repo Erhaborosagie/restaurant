@@ -11,6 +11,11 @@ class DBHelper {
     return `http://localhost:${port}/restaurants`;
     //return `./data/restaurants.json`;
   }
+  static get REVIEW_URL() {
+    const port = 1337; // Change this to your server port
+    return `http://localhost:${port}`;
+    //return `./data/restaurants.json`;
+  }
 
   /**
    * Fetch all restaurants.
@@ -224,5 +229,48 @@ class DBHelper {
       animation: google.maps.Animation.DROP
     });
     return marker;
+  }
+
+  static fetchReviews(restaurant, callback) {
+    let dbPromise = idb.open("restaurantDb", 2, function(upgradeDb) {
+      console.log("making a new object store");
+      if (!upgradeDb.objectStoreNames.contains("reviewStore")) {
+        upgradeDb.createObjectStore("reviewStore", { keyPath: "id" });
+      }
+    });
+    dbPromise
+      .then(function(db) {
+        let tx = db.transaction("reviewStore");
+        let store = tx.objectStore("reviewStore");
+        return store.getAll();
+      })
+      .then(reviews => {
+        if (reviews && reviews.length > 0) {
+          callback(null, reviews);
+        } else {
+          const urlParams = new URLSearchParams(window.location.search);
+          const urlId = urlParams.get("id");
+          fetch(`${DBHelper.REVIEW_URL}/reviews?restaurant_id=${urlId}`)
+            .then(response => {
+              return response.json();
+            })
+            .then(reviews => {
+              console.log(reviews);
+              dbPromise.then(function(db) {
+                if (!db) return;
+                let tx = db.transaction("reviewStore", "readwrite");
+                let store = tx.objectStore("reviewStore");
+
+                reviews.forEach(review => {
+                  store.put(review);
+                });
+              });
+              callback(null, reviews);
+            })
+            .catch(error => {
+              callback(error, null);
+            });
+        }
+      });
   }
 }
