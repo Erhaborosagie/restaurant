@@ -264,4 +264,30 @@ class DBHelper {
         }
       });
   }
+
+  static lateSubmission() {
+    DBHelper.dbPromise.then(db => {
+      const tx = db.transaction("offlineReviews");
+      const store = tx.objectStore("offlineReviews");
+      store.getAll().then(lateItems => {
+        console.log(lateItems);
+        lateItems.forEach(review => {
+          DBHelper.dbPromise.then(function(db) {
+            let tx = db.transaction("reviewStore", "readwrite");
+            let store = tx.objectStore("reviewStore");
+
+            store.put(review);
+          });
+        });
+      });
+    });
+  }
+
+  static clearLateItems() {
+    DBHelper.dbPromise.then(db => {
+      const tx = db.transaction("offlineReviews", "readwrite");
+      const store = tx.objectStore("offlineReviews").clear();
+    });
+    return;
+  }
 }

@@ -30,8 +30,21 @@ function postReviews(e) {
     body: JSON.stringify(params)
   })
     .then(res => res.json())
-    .then(data => console.log(data))
-    .catch(err => console.log(err));
+    .then(data => {
+      DBHelper.dbPromise.then(function(db) {
+        let tx = db.transaction("reviewStore", "readwrite");
+        let store = tx.objectStore("reviewStore");
+
+        store.put(data);
+      });
+    })
+    .catch(err => {
+      dbPromise.then(db => {
+        const tx = db.transaction("offlineReviews", "readwrite");
+        const store = tx.objectStore("offlineReviews");
+        store.put(params);
+      });
+    });
 }
 
 window.initMap = () => {
