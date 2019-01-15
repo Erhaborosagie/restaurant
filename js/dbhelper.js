@@ -1,17 +1,8 @@
-/**
- * Common database helper functions.
- */
 class DBHelper {
-  /**
-   * Database URL.
-   * Change this to restaurants.json file location on your server.
-   */
   static get DATABASE_URL() {
-    const port = 1337; // Change this to your server port
+    const port = 1337;
     return `http://localhost:${port}`;
-    //return `./data/restaurants.json`;
   }
-
   static get dbPromise() {
     return idb.open("restaurantDb", 1, function(upgradeDb) {
       console.log("making new object stores");
@@ -20,10 +11,6 @@ class DBHelper {
       upgradeDb.createObjectStore("offlineReviews", { keyPath: "id" });
     });
   }
-
-  /**
-   * Fetch all restaurants.
-   */
   static fetchRestaurants(callback) {
     DBHelper.dbPromise
       .then(function(db) {
@@ -32,11 +19,9 @@ class DBHelper {
         return store.getAll();
       })
       .then(function(restaurants) {
-        //check for availability of data in indexeddb and return it
         if (restaurants.length !== 0) {
           callback(null, restaurants);
         } else {
-          // No data, attempt a fetch
           fetch(`${DBHelper.DATABASE_URL}/restaurants`)
             .then(response => {
               return response.json();
@@ -46,11 +31,9 @@ class DBHelper {
                 .then(function(db) {
                   let tx = db.transaction("restaurant", "readwrite");
                   let restaurantStore = tx.objectStore("restaurant");
-
                   for (let restaurant of restaurants) {
                     restaurantStore.put(restaurant);
                   }
-
                   return tx.complete;
                 })
                 .then(function() {
@@ -66,7 +49,6 @@ class DBHelper {
         }
       });
   }
-
   static restaurantToDb(restaurants) {
     let request = window.indexedDB.open("resDB", 1);
     request.onupgradeneeded = e => {
@@ -82,101 +64,68 @@ class DBHelper {
       });
     };
   }
-
-  /**
-   * Fetch a restaurant by its ID.
-   */
   static fetchRestaurantById(id, callback) {
-    // fetch all restaurants with proper error handling.
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
         const restaurant = restaurants.find(r => r.id == id);
         if (restaurant) {
-          // Got the restaurant
           callback(null, restaurant);
         } else {
-          // Restaurant does not exist in the database
           callback("Restaurant does not exist", null);
         }
       }
     });
   }
-
-  /**
-   * Fetch restaurants by a cuisine type with proper error handling.
-   */
   static fetchRestaurantByCuisine(cuisine, callback) {
-    // Fetch all restaurants  with proper error handling
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
-        // Filter restaurants to have only given cuisine type
         const results = restaurants.filter(r => r.cuisine_type == cuisine);
         callback(null, results);
       }
     });
   }
-
-  /**
-   * Fetch restaurants by a neighborhood with proper error handling.
-   */
   static fetchRestaurantByNeighborhood(neighborhood, callback) {
-    // Fetch all restaurants
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
-        // Filter restaurants to have only given neighborhood
         const results = restaurants.filter(r => r.neighborhood == neighborhood);
         callback(null, results);
       }
     });
   }
-
-  /**
-   * Fetch restaurants by a cuisine and a neighborhood with proper error handling.
-   */
   static fetchRestaurantByCuisineAndNeighborhood(
     cuisine,
     neighborhood,
     callback
   ) {
-    // Fetch all restaurants
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
         let results = restaurants;
         if (cuisine != "all") {
-          // filter by cuisine
           results = results.filter(r => r.cuisine_type == cuisine);
         }
         if (neighborhood != "all") {
-          // filter by neighborhood
           results = results.filter(r => r.neighborhood == neighborhood);
         }
         callback(null, results);
       }
     });
   }
-
-  /**
-   * Fetch all neighborhoods with proper error handling.
-   */
   static fetchNeighborhoods(callback) {
-    // Fetch all restaurants
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
-        // Get all neighborhoods from all restaurants
         const neighborhoods = restaurants.map(
           (v, i) => restaurants[i].neighborhood
         );
-        // Remove duplicates from neighborhoods
         const uniqueNeighborhoods = neighborhoods.filter(
           (v, i) => neighborhoods.indexOf(v) == i
         );
@@ -184,19 +133,12 @@ class DBHelper {
       }
     });
   }
-
-  /**
-   * Fetch all cuisines with proper error handling.
-   */
   static fetchCuisines(callback) {
-    // Fetch all restaurants
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
         callback(error, null);
       } else {
-        // Get all cuisines from all restaurants
         const cuisines = restaurants.map((v, i) => restaurants[i].cuisine_type);
-        // Remove duplicates from cuisines
         const uniqueCuisines = cuisines.filter(
           (v, i) => cuisines.indexOf(v) == i
         );
@@ -204,17 +146,9 @@ class DBHelper {
       }
     });
   }
-
-  /**
-   * Restaurant page URL.
-   */
   static urlForRestaurant(restaurant) {
     return `./restaurant.html?id=${restaurant.id}`;
   }
-
-  /**
-   * Restaurant image URL.
-   */
   static imageUrlForRestaurant(restaurant) {
     return `/img/${restaurant.photograph}.jpg`;
   }
@@ -228,7 +162,6 @@ class DBHelper {
     });
     return marker;
   }
-
   static fetchReviews(restaurant, callback) {
     DBHelper.dbPromise
       .then(function(db) {
@@ -251,7 +184,6 @@ class DBHelper {
                 if (!db) return;
                 let tx = db.transaction("reviewStore", "readwrite");
                 let store = tx.objectStore("reviewStore");
-
                 reviews.forEach(review => {
                   store.put(review);
                 });
@@ -264,7 +196,6 @@ class DBHelper {
         }
       });
   }
-
   static lateSubmission() {
     DBHelper.dbPromise.then(db => {
       const tx = db.transaction("offlineReviews");
@@ -275,14 +206,12 @@ class DBHelper {
           DBHelper.dbPromise.then(function(db) {
             let tx = db.transaction("reviewStore", "readwrite");
             let store = tx.objectStore("reviewStore");
-
             store.put(review);
           });
         });
       });
     });
   }
-
   static clearLateItems() {
     DBHelper.dbPromise.then(db => {
       const tx = db.transaction("offlineReviews", "readwrite");
