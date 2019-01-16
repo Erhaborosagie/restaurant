@@ -144,6 +144,7 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
  * Create restaurant HTML.
  */
 createRestaurantHTML = restaurant => {
+  const url = `${DBHelper.DATABASE_URL}/restaurants/${restaurant.id}`;
   const li = document.createElement("li");
 
   const image = document.createElement("img");
@@ -163,6 +164,58 @@ createRestaurantHTML = restaurant => {
   const address = document.createElement("p");
   address.innerHTML = restaurant.address;
   li.append(address);
+
+  const isFavourite = document.createElement("button");
+  isFavourite.className = "isFavourite";
+  isFavourite.id = `fav-${restaurant.id}`;
+  isFavourite.onclick = changeOpt;
+
+  if (restaurant.is_favorite === true) {
+    isFavourite.innerHTML = "Unmark as Favorite";
+  } else {
+    isFavourite.innerHTML = "Mark as Favorite";
+  }
+
+  li.append(isFavourite);
+
+  function changeOpt() {
+    if (isFavourite.innerHTML === "Mark as Favorite") {
+      isFavourite.innerHTML = "Unmark as Favorite";
+      favour();
+    } else {
+      isFavourite.innerHTML = "Mark as Favorite";
+      unfavour();
+    }
+  }
+
+  function favour() {
+    fetch(url, {
+      method: "PUT",
+      body: JSON.stringify({ is_favorite: true }),
+      headers: {
+        "content-type": "application/json"
+      }
+    })
+      .then(res => {
+        res.json;
+        alert(url);
+      })
+      .catch(err => console.log(err));
+  }
+
+  function unfavour() {
+    fetch(url, {
+      method: "PUT",
+      body: JSON.stringify({ is_favorite: false }),
+      headers: {
+        "content-type": "application/json"
+      }
+    })
+      .then(res => {
+        res.json;
+      })
+      .catch(err => console.log(err));
+  }
 
   const more = document.createElement("a");
   more.innerHTML = "View " + restaurant.name;
