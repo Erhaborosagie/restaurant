@@ -1,32 +1,21 @@
 let restaurant;
 var newMap;
-
-/**
- * Initialize map as soon as the page is loaded.
- */
-document.addEventListener("DOMContentLoaded", event => {
-  //initMap();
+window.addEventListener("load", () => {
+  DBHelper.lateSubmission();
+  initMap();
 });
-
 document.getElementById("postReviews").addEventListener("submit", postReviews);
-
 function postReviews(e) {
   e.preventDefault();
-  let rate = document.querySelector('input[name="rate"]:checked').value;
-  let name = document.getElementById("reviewer").value;
-  let comments = document.getElementById("reviewMessage").value;
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlId = urlParams.get("id");
-
   const params = {
-    restaurant_id: urlId,
-    name: name,
-    rating: rate,
-    comments: comments
+    restaurant_id: parseInt(getParameterByName("id")),
+    name: document.getElementById("reviewer").value,
+    rating: document.querySelector('input[name="rate"]:checked').value,
+    comments: document.getElementById("reviewMessage").value
   };
   fetch("http://localhost:1337/reviews/", {
     method: "POST",
-    headers: new Headers(),
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
     body: JSON.stringify(params)
   })
     .then(res => res.json())
@@ -34,48 +23,48 @@ function postReviews(e) {
       DBHelper.dbPromise.then(function(db) {
         let tx = db.transaction("reviewStore", "readwrite");
         let store = tx.objectStore("reviewStore");
-
         store.put(data);
       });
     })
     .catch(err => {
-      dbPromise.then(db => {
+      DBHelper.dbPromise.then(db => {
+        console.log("No network");
+        params.updatedAt = new Date().getTime();
         const tx = db.transaction("offlineReviews", "readwrite");
         const store = tx.objectStore("offlineReviews");
         store.put(params);
       });
     });
 }
-
+function showMap() {
+  document.getElementById("map").style.display = "block";
+  document.getElementById("map-container").style.display = "block";
+  document.getElementById("restaurant-container").style.width = "50%";
+  document.getElementById("reviews-container").style.width = "50%";
+  document.getElementById("comment-container").style.width = "50%";
+}
 window.initMap = () => {
   fetchRestaurantFromURL((error, restaurant) => {
     if (error) {
-      // Got an error!
       console.error(error);
     } else {
       self.map = new google.maps.Map(document.getElementById("map"), {
         zoom: 16,
         center: restaurant.latlng,
-        scrollwheel: false
+        scrollwheel: !1
       });
       fillBreadcrumb();
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
   });
 };
-
-/**
- * Get current restaurant from page URL.
- */
 fetchRestaurantFromURL = callback => {
   if (self.restaurant) {
-    // restaurant already fetched!
     callback(null, self.restaurant);
     return;
   }
   const id = getParameterByName("id");
   if (!id) {
-    // no id found in URL
     error = "No restaurant id in URL";
     callback(error, null);
   } else {
@@ -96,64 +85,42 @@ fetchRestaurantFromURL = callback => {
     });
   }
 };
-
-/**
- * Create. restaurant HTML and add it to the webpage
- */
 fillRestaurantHTML = (restaurant = self.restaurant) => {
   const name = document.getElementById("restaurant-name");
   name.innerHTML = restaurant.name;
-
   const address = document.getElementById("restaurant-address");
   address.innerHTML = restaurant.address;
-
   const image = document.getElementById("restaurant-img");
   image.className = "restaurant-img";
   image.alt = restaurant.name + " image";
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
-
   const cuisine = document.getElementById("restaurant-cuisine");
   cuisine.innerHTML = restaurant.cuisine_type;
-
-  // fill operating hours
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
-  // fill reviews
   fillReviewsHTML();
 };
-
-/**
- * Create restaurant operating hours HTML table and add it to the webpage.
- */
 fillRestaurantHoursHTML = (
   operatingHours = self.restaurant.operating_hours
 ) => {
   const hours = document.getElementById("restaurant-hours");
   for (let key in operatingHours) {
     const row = document.createElement("tr");
-
     const day = document.createElement("td");
     day.innerHTML = key;
     row.appendChild(day);
-
     const time = document.createElement("td");
     time.innerHTML = operatingHours[key];
     row.appendChild(time);
-
     hours.appendChild(row);
   }
 };
-
-/**
- * Create all reviews HTML and add them to the webpage.
- */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   const container = document.getElementById("reviews-container");
   const title = document.createElement("h3");
   title.innerHTML = "Reviews";
   container.appendChild(title);
-
   if (!reviews) {
     const noReviews = document.createElement("p");
     noReviews.innerHTML = "No reviews yet!";
@@ -166,44 +133,28 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   });
   container.appendChild(ul);
 };
-
-/**
- * Create review HTML and add it to the webpage.
- */
 createReviewHTML = review => {
   const li = document.createElement("li");
   const name = document.createElement("p");
   name.innerHTML = review.name;
   li.appendChild(name);
-
   const date = document.createElement("p");
   date.innerHTML = review.date;
   li.appendChild(date);
-
   const rating = document.createElement("p");
   rating.innerHTML = `Rating: ${review.rating}`;
   li.appendChild(rating);
-
   const comments = document.createElement("p");
   comments.innerHTML = review.comments;
   li.appendChild(comments);
-
   return li;
 };
-
-/**
- * Add restaurant name to the breadcrumb navigation menu
- */
 fillBreadcrumb = (restaurant = self.restaurant) => {
   const breadcrumb = document.getElementById("breadcrumb");
   const li = document.createElement("li");
   li.innerHTML = restaurant.name;
   breadcrumb.appendChild(li);
 };
-
-/**
- * Get a parameter by name from page URL.
- */
 getParameterByName = (name, url) => {
   if (!url) url = window.location.href;
   name = name.replace(/[\[\]]/g, "\\$&");

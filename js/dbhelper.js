@@ -7,8 +7,8 @@ class DBHelper {
     return idb.open("restaurantDb", 1, function(upgradeDb) {
       console.log("making new object stores");
       upgradeDb.createObjectStore("restaurant", { keyPath: "id" });
-      upgradeDb.createObjectStore("reviewStore", { keyPath: "id" });
-      upgradeDb.createObjectStore("offlineReviews", { keyPath: "id" });
+      upgradeDb.createObjectStore("reviewStore", { keyPath: "updatedAt" });
+      upgradeDb.createObjectStore("offlineReviews", { keyPath: "updatedAt" });
     });
   }
   static fetchRestaurants(callback) {
@@ -201,14 +201,30 @@ class DBHelper {
       const tx = db.transaction("offlineReviews");
       const store = tx.objectStore("offlineReviews");
       store.getAll().then(lateItems => {
-        console.log(lateItems);
-        lateItems.forEach(review => {
-          DBHelper.dbPromise.then(function(db) {
-            let tx = db.transaction("reviewStore", "readwrite");
-            let store = tx.objectStore("reviewStore");
-            store.put(review);
+        if (lateItems.length !== 0) {
+          lateItems.forEach(review => {
+            fetch("http://localhost:1337/reviews/", {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify(review)
+            })
+              .then(res => res.json())
+              .then(data => {
+                DBHelper.dbPromise.then(function(db) {
+                  let tx = db.transaction("reviewStore", "readwrite");
+                  let store = tx.objectStore("reviewStore");
+                  store.put(data);
+                  DBHelper.clearLateItems();
+                });
+              })
+              .catch(err => {
+                console.log("Still no network");
+              });
           });
-        });
+        }
       });
     });
   }

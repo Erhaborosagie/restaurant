@@ -135,6 +135,7 @@
         height: 400px;
         width: 100%;
         background-color: #ccc;
+        display: none;
       }
       /* ====================== Restaurant Filtering ====================== */
       .filter-options {
@@ -229,12 +230,14 @@
         height: 300px;
         position: relative;
         width: 100%;
+        display: none;
       }
 
       .inside #map {
         background-color: #ccc;
         height: 300px;
         width: 100%;
+        display: none;
       }
       .inside #footer {
         bottom: 0;
@@ -296,9 +299,11 @@
           right: 0;
           top: 120px;
           width: 50%;
+          display: none;
         }
         .inside #map {
           height: 100%;
+          display: none;
         }
         #restaurant-container,
         #reviews-container,
@@ -356,9 +361,11 @@
         }
         #map-container {
           height: 150px;
+          display: none;
         }
         #map {
           height: 150px;
+          display: none;
         }
       }
     </style>
@@ -395,6 +402,7 @@
           >
             <option value="all">All Cuisines</option>
           </select>
+          <button onclick="showMap()">View Map</button>
         </div>
         <ul id="restaurants-list"></ul>
       </section>
@@ -406,7 +414,7 @@
     <script
       async
       defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDUj4LRpc0efvd8W9nQpHL3ezDNg1_IQOY&libraries=places&callback=initMap"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDUj4LRpc0efvd8W9nQpHL3ezDNg1_IQOY&libraries=places"
     ></script>
     <script src="./js/idb.js"></script>
     <script

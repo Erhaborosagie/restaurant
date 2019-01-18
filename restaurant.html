@@ -155,6 +155,7 @@
         height: 400px;
         width: 100%;
         background-color: #ccc;
+        display: none;
       }
       /* ====================== Restaurant Filtering ====================== */
       .filter-options {
@@ -249,9 +250,11 @@
         height: 300px;
         position: relative;
         width: 100%;
+        display: none;
       }
 
       .inside #map {
+        display: none;
         background-color: #ccc;
         height: 300px;
         width: 100%;
@@ -316,14 +319,16 @@
           right: 0;
           top: 120px;
           width: 50%;
+          display: none;
         }
         .inside #map {
           height: 100%;
+          display: none;
         }
         #restaurant-container,
         #reviews-container,
         #comment-container {
-          width: 50%;
+          width: 100%;
         }
       }
       @media (min-width: 1100px) {
@@ -376,9 +381,11 @@
         }
         #map-container {
           height: 150px;
+          display: none;
         }
         #map {
           height: 150px;
+          display: none;
         }
       }
     </style>
@@ -388,7 +395,10 @@
     <!-- Beginning header -->
     <header>
       <!-- Beginning nav -->
-      <nav><h1>Restaurant Reviews</h1></nav>
+      <nav>
+        <h1>Restaurant Reviews</h1>
+        <button onclick="showMap()">View Map</button>
+      </nav>
       <!-- Beginning breadcrumb -->
       <ul id="breadcrumb" role="navigation" aria-label="Breadcrumb">
         <li><a href="/">Home</a></li>
@@ -401,7 +411,7 @@
     <!-- Beginning main -->
     <main id="maincontent">
       <!-- Beginning map -->
-      <section id="map-container">
+      <section id="map-container" tableindex="-1">
         <div id="map" aria-label="location" role="application"></div>
       </section>
       <!-- End map -->
@@ -411,7 +421,7 @@
         <img id="restaurant-img" />
         <p id="restaurant-cuisine"></p>
         <p id="restaurant-address"></p>
-        <table id="restaurant-hours" tabindex="1"></table>
+        <table id="restaurant-hours"></table>
       </section>
       <!-- end restaurant -->
       <!-- Beginning reviews -->
@@ -484,7 +494,7 @@
     <script
       async
       defer
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDUj4LRpc0efvd8W9nQpHL3ezDNg1_IQOY&libraries=places&callback=initMap"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDUj4LRpc0efvd8W9nQpHL3ezDNg1_IQOY&libraries=places"
     ></script>
     <script src="./js/idb.js"></script>
     <script type="text/javascript" src="js/dbhelper.js"></script>
@@ -492,5 +502,6 @@
     <script type="text/javascript" src="js/restaurant_info.js"></script>
     <script src="./js/app.js"></script>
     <!-- Google Maps -->
+    <script></script>
   </body>
 </html>
