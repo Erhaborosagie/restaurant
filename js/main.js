@@ -117,7 +117,7 @@ createRestaurantHTML = restaurant => {
   isFavourite.className = "isFavourite";
   isFavourite.id = `fav-${restaurant.id}`;
   isFavourite.onclick = changeOpt;
-  if (restaurant.is_favorite === !0) {
+  if (restaurant.is_favorite === true) {
     isFavourite.innerHTML = "Unmark as Favorite";
   } else {
     isFavourite.innerHTML = "Mark as Favorite";
@@ -133,25 +133,61 @@ createRestaurantHTML = restaurant => {
     }
   }
   function favour() {
+    restaurant.is_favorite = true;
     fetch(url, {
       method: "PUT",
-      body: JSON.stringify({ is_favorite: !0 }),
+      body: JSON.stringify({ is_favorite: true }),
       headers: { "content-type": "application/json" }
     })
       .then(res => {
         res.json;
-        alert(url);
+
+        DBHelper.dbPromise.then(function(db) {
+          if (!db) return;
+          let tx = db.transaction("reviewStore", "readwrite");
+          let store = tx.objectStore("reviewStore");
+          let updateRecord = store.get(restaurant.id);
+          updateRecord.onsuccess = function() {
+            let data = updateRecord.result;
+            data.is_favorite = true;
+            let updateFavor = store.put(data);
+            updateFavor.onsuccess = function() {
+              console.log("success uodating");
+            };
+          };
+          updateRecord.onerror = function() {
+            console.log("error updating");
+          };
+        });
       })
       .catch(err => console.log(err));
   }
   function unfavour() {
+    restaurant.is_favorite = false;
     fetch(url, {
       method: "PUT",
-      body: JSON.stringify({ is_favorite: !1 }),
+      body: JSON.stringify({ is_favorite: false }),
       headers: { "content-type": "application/json" }
     })
       .then(res => {
         res.json;
+        DBHelper.dbPromise.then(function(db) {
+          if (!db) return;
+          let tx = db.transaction("reviewStore", "readwrite");
+          let store = tx.objectStore("reviewStore");
+          let updateRecord = store.get(restaurant.id);
+          updateRecord.onsuccess = function() {
+            let data = updateRecord.result;
+            data.is_favorite = false;
+            let updateFavor = store.put(data);
+            updateFavor.onsuccess = function() {
+              console.log("success uodating");
+            };
+          };
+          updateRecord.onerror = function() {
+            console.log("error updating");
+          };
+        });
       })
       .catch(err => console.log(err));
   }
@@ -170,3 +206,4 @@ addMarkersToMap = (restaurants = self.restaurants) => {
     self.markers.push(marker);
   });
 };
+//a

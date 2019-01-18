@@ -49,21 +49,6 @@ class DBHelper {
         }
       });
   }
-  static restaurantToDb(restaurants) {
-    let request = window.indexedDB.open("resDB", 1);
-    request.onupgradeneeded = e => {
-      let db = request.result;
-      let store = db.createObjectStore("resStore", { keyPath: "id" });
-    };
-    request.onsuccess = e => {
-      let db = request.result;
-      let tx = db.transaction("resStore", "readwrite");
-      let store = tx.objectStore("resStore");
-      restaurants.forEach(restaurant => {
-        store.put(restaurant);
-      });
-    };
-  }
   static fetchRestaurantById(id, callback) {
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
